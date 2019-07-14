@@ -1,0 +1,10 @@
+venv/
+logs/
+*.err
+*.log
+*.out
+*.out
+*.db
+*.cfg
+*.pid
+.idea/
