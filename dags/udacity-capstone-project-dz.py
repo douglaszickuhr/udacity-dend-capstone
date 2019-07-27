@@ -41,7 +41,7 @@ with dag:
             s3_conn_id='aws_credentials',
             s3_bucket='udac-dend-capstone-dz',
             s3_key=table.get('s3_key', None),
-            load_type='truncate',
+            load_type='rebuild',
             copy_params=table.get('copy_params', None),
             origin_schema=table.get('origin_schema', None),
             schema_location='Local')
