@@ -8,3 +8,4 @@ logs/
 *.cfg
 *.pid
 .idea/
+*.pyc

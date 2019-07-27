@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.subdag_operator import SubDagOperator
 from subdags.copy_to_redshift import get_s3_to_redshift
+import yaml
 #from airflow.operators import S3ToRedshiftOperator
 
 
