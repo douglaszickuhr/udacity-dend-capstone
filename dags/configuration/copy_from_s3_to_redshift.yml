@@ -1,0 +1,113 @@
+- copy_params:
+  - JSON 'auto'
+  origin_schema:
+  - name: user_id
+    type: varchar
+  - name: business_id
+    type: varchar
+  - name: text
+    type: varchar(max)
+  - name: date
+    type: timestamp
+  - name: compliment_count
+    type: int4
+  s3_key: yelp_academic_dataset_tip.json
+  table_name: tips
+- copy_params:
+  - FORMAT AS CSV
+  - IGNOREHEADER 1
+  origin_schema:
+  - name: business_id
+    type: varchar
+  - name: name
+    type: varchar
+  - name: categories
+    type: varchar
+  - name: type
+    type: varchar
+  - name: latitude
+    type: float8
+  - name: longitude
+    type: float8
+  - name: review_count
+    type: int4
+  - name: state
+    type: varchar
+  - name: city
+    type: varchar
+  - name: full_address
+    type: varchar(max)
+  - name: open
+    type: bool
+  s3_key: yelp_academic_dataset_business_short.csv
+  table_name: business
+- copy_params:
+  - JSON 'auto'
+  origin_schema:
+  - name: user_id
+    type: varchar
+  - name: name
+    type: varchar
+  - name: review_count
+    type: int4
+  - name: yelping_since
+    type: datetime
+  - name: useful
+    type: int4
+  - name: funny
+    type: int4
+  - name: cool
+    type: int4
+  - name: elite
+    type: varchar
+  - name: fans
+    type: int4
+  - name: average_stars
+    type: float8
+  - name: compliment_hot
+    type: int4
+  - name: compliment_more
+    type: int4
+  - name: compliment_profile
+    type: int4
+  - name: compliment_cute
+    type: int4
+  - name: compliment_list
+    type: int4
+  - name: compliment_note
+    type: int4
+  - name: compliment_plain
+    type: int4
+  - name: compliment_cool
+    type: int4
+  - name: compliment_funny
+    type: int4
+  - name: compliment_writer
+    type: int4
+  - name: compliment_photos
+    type: int4
+  s3_key: yelp_academic_dataset_user.json
+  table_name: users
+- copy_params:
+  - JSON 'auto'
+  origin_schema:
+  - name: review_id
+    type: varchar
+  - name: user_id
+    type: varchar
+  - name: business_id
+    type: varchar
+  - name: stars
+    type: float8
+  - name: useful
+    type: int4
+  - name: funny
+    type: int4
+  - name: cool
+    type: int4
+  - name: text
+    type: varchar(max)
+  - name: date
+    type: datetime
+  s3_key: yelp_academic_dataset_review.json
+  table_name: reviews
