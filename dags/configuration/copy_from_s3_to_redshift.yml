@@ -1,4 +1,6 @@
-- copy_params:
+- table_name: tips
+  s3_key: yelp_academic_dataset_tip.json
+  copy_params:
   - JSON 'auto'
   origin_schema:
   - name: user_id
@@ -11,9 +13,9 @@
     type: timestamp
   - name: compliment_count
     type: int4
-  s3_key: yelp_academic_dataset_tip.json
-  table_name: tips
-- copy_params:
+- table_name: business
+  s3_key: yelp_academic_dataset_business.csv
+  copy_params:
   - FORMAT AS CSV
   - IGNOREHEADER 1
   origin_schema:
@@ -22,12 +24,12 @@
   - name: name
     type: varchar
   - name: categories
-    type: varchar
-  - name: type
-    type: varchar
+    type: varchar(max)
   - name: latitude
     type: float8
   - name: longitude
+    type: float8
+  - name: stars
     type: float8
   - name: review_count
     type: int4
@@ -39,9 +41,9 @@
     type: varchar(max)
   - name: open
     type: bool
-  s3_key: yelp_academic_dataset_business_short.csv
-  table_name: business
-- copy_params:
+- table_name: users
+  s3_key: yelp_academic_dataset_user.json
+  copy_params:
   - JSON 'auto'
   origin_schema:
   - name: user_id
@@ -86,9 +88,9 @@
     type: int4
   - name: compliment_photos
     type: int4
-  s3_key: yelp_academic_dataset_user.json
-  table_name: users
-- copy_params:
+- s3_key: yelp_academic_dataset_review.json
+  table_name: reviews
+  copy_params:
   - JSON 'auto'
   origin_schema:
   - name: review_id
@@ -109,5 +111,3 @@
     type: varchar(max)
   - name: date
     type: datetime
-  s3_key: yelp_academic_dataset_review.json
-  table_name: reviews
