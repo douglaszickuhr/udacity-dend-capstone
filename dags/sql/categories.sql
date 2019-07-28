@@ -1,5 +1,6 @@
-drop
-  table dim_category;
+-- Creating categories dimension
+drop table if exists dim_category;
+
 select
   md5(a.category) as category_id,
   category into dim_category
@@ -38,6 +39,81 @@ from
       union all
       select
         11
+      union all
+      select
+        12
+      union all
+      select
+        13
+      union all
+      select
+        14
+      union all
+      select
+        15
+      union all
+      select
+        16
+      union all
+      select
+        17
+      union all
+      select
+        18
+      union all
+      select
+        19
+      union all
+      select
+        20
+      union all
+      select
+        21
+      union all
+      select
+        22
+      union all
+      select
+        23
+      union all
+      select
+        24
+      union all
+      select
+        25
+      union all
+      select
+        26
+      union all
+      select
+        27
+      union all
+      select
+        28
+      union all
+      select
+        29
+      union all
+      select
+        30
+      union all
+      select
+        31
+      union all
+      select
+        32
+      union all
+      select
+        33
+      union all
+      select
+        34
+      union all
+      select
+        35
+      union all
+      select
+        36
     )
     select
       TRIM(
@@ -54,8 +130,10 @@ from
     group by
       category
   ) a;
-drop
-  table bridge_business_category;
+
+-- Creating bridge between business and categories
+drop table if exists bridge_business_category;
+
 select
   a.business_id,
   dim_category.category_id into bridge_business_category
@@ -94,6 +172,81 @@ from
       union all
       select
         11
+      union all
+      select
+        12
+      union all
+      select
+        13
+      union all
+      select
+        14
+      union all
+      select
+        15
+      union all
+      select
+        16
+      union all
+      select
+        17
+      union all
+      select
+        18
+      union all
+      select
+        19
+      union all
+      select
+        20
+      union all
+      select
+        21
+      union all
+      select
+        22
+      union all
+      select
+        23
+      union all
+      select
+        24
+      union all
+      select
+        25
+      union all
+      select
+        26
+      union all
+      select
+        27
+      union all
+      select
+        28
+      union all
+      select
+        29
+      union all
+      select
+        30
+      union all
+      select
+        31
+      union all
+      select
+        32
+      union all
+      select
+        33
+      union all
+      select
+        34
+      union all
+      select
+        35
+      union all
+      select
+        36
     )
     select
       staging_business.business_id,
