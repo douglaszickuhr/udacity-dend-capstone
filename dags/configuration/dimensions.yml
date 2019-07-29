@@ -1,2 +1,0 @@
-- task_name: dim_category
-  sql: '/sql/categories.sql'
