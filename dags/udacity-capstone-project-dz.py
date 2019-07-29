@@ -29,9 +29,6 @@ dag = DAG('udacity-dend-capstone-dz',
 with open('dags/configuration/copy_from_s3_to_redshift.yml', 'r') as file:
     copy_definitions = yaml.safe_load(file)
 
-with open('dags/configuration/dimensions.yml', 'r') as file:
-    dimensions_definitions = yaml.safe_load(file)
-
 with dag:
     start_operator = DummyOperator(
         task_id='start_operator')
@@ -54,9 +51,59 @@ with dag:
         executor=GetDefaultExecutor())
     copy_data_to_redshift.set_upstream(start_operator)
 
-    for dimension in dimensions_definitions:
-        dimension_task = PostgresOperator(
-            task_id=f"process_{dimension.get('task_name')}",
-            sql=dimension.get('sql', None),
-            postgres_conn_id='redshift')
-        dimension_task.set_upstream(copy_data_to_redshift)
+
+process_dim_category = PostgresOperator(
+    dag=dag,
+    task_id='process_dim_category',
+    sql='/sql/categories.sql',
+    postgres_conn_id='redshift'
+)
+process_dim_category.set_upstream(copy_data_to_redshift)
+
+process_dim_cities = PostgresOperator(
+    dag=dag,
+    task_id='process_dim_cities',
+    sql='/sql/cities.sql',
+    postgres_conn_id='redshift'
+)
+process_dim_cities.set_upstream(copy_data_to_redshift)
+
+process_dim_business = PostgresOperator(
+    dag=dag,
+    task_id='process_dim_business',
+    sql='/sql/business.sql',
+    postgres_conn_id='redshift'
+)
+process_dim_business.set_upstream([process_dim_category, process_dim_cities])
+
+process_dim_users = PostgresOperator(
+    dag=dag,
+    task_id='process_dim_users',
+    sql='/sql/users.sql',
+    postgres_conn_id='redshift'
+)
+process_dim_users.set_upstream(copy_data_to_redshift)
+
+process_dim_times = PostgresOperator(
+    dag=dag,
+    task_id='process_dim_times',
+    sql='/sql/times.sql',
+    postgres_conn_id='redshift'
+)
+process_dim_times.set_upstream(copy_data_to_redshift)
+
+process_fact_tips = PostgresOperator(
+    dag=dag,
+    task_id='process_fact_tips',
+    sql='/sql/fact_tips.sql',
+    postgres_conn_id='redshift'
+)
+process_fact_tips.set_upstream([process_dim_times, process_dim_users, process_dim_business])
+
+process_fact_reviews = PostgresOperator(
+    dag=dag,
+    task_id='process_fact_reviews',
+    sql='/sql/fact_reviews.sql',
+    postgres_conn_id='redshift'
+)
+process_fact_reviews.set_upstream([process_dim_times, process_dim_users, process_dim_business])
