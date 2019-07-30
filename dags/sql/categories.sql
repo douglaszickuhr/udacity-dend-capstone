@@ -1,9 +1,17 @@
 -- Creating categories dimension
-drop table if exists dim_category;
+drop table if exists dim_category cascade;
 
+CREATE TABLE IF NOT EXISTS dim_category
+(
+	category_id VARCHAR(32) NOT NULL,
+	category VARCHAR(max) NOT NULL,
+	PRIMARY KEY (category_id)
+);
+
+insert into dim_category
 select
   md5(a.category) as category_id,
-  category into dim_category
+  category
 from
   (
     with NS AS (
@@ -132,11 +140,21 @@ from
   ) a;
 
 -- Creating bridge between business and categories
-drop table if exists bridge_business_category;
+drop table if exists bridge_business_category cascade;
 
+CREATE TABLE IF NOT EXISTS bridge_business_category
+(
+	bridge_business_category_id VARCHAR(32) NOT NULL,
+	business_id VARCHAR(256) NOT NULL,
+	category_id VARCHAR(32) NOT NULL,
+	PRIMARY KEY (bridge_business_category_id)
+);
+
+insert into bridge_business_category
 select
+  md5(a.business_id||dim_category.category_id) as bridge_business_category_id,
   a.business_id,
-  dim_category.category_id into bridge_business_category
+  dim_category.category_id
 from
   (
     with NS AS (

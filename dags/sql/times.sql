@@ -1,4 +1,21 @@
-drop table if exists dim_times;
+drop table if exists dim_times cascade;
+
+CREATE TABLE IF NOT EXISTS dim_times
+(
+	"datetime" TIMESTAMP NOT NULL,
+	"hour" INTEGER NOT NULL,
+	"minute" INTEGER NOT NULL,
+	"day" INTEGER NOT NULL,
+	"month" INTEGER NOT NULL,
+	"year" INTEGER NOT NULL,
+	quarter INTEGER NOT NULL,
+	weekday INTEGER NOT NULL,
+	yearday INTEGER NOT NULL,
+  PRIMARY KEY (datetime)
+)
+DISTSTYLE EVEN;
+
+insert into dim_times
 select
   a.datetime,
   extract(
@@ -41,8 +58,6 @@ select
     from
       a.datetime
   ) as yearday
-into
-dim_times
 from
   (
     SELECT
