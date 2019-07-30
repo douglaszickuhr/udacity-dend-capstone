@@ -107,3 +107,11 @@ process_fact_reviews = PostgresOperator(
     postgres_conn_id='redshift'
 )
 process_fact_reviews.set_upstream([process_dim_times, process_dim_users, process_dim_business])
+
+process_fk = PostgresOperator(
+    dag=dag,
+    task_id='process_foreign_keys',
+    sql='/sql/dim_fk.sql',
+    postgres_conn_id='redshift'
+)
+process_fk.set_upstream([process_fact_tips, process_fact_reviews])
