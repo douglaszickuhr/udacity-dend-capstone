@@ -2,9 +2,10 @@ from airflow import DAG
 from datetime import datetime, timedelta
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.subdag_operator import SubDagOperator
-from subdags.copy_to_redshift import get_s3_to_redshift
 from airflow.operators.postgres_operator import PostgresOperator
+from airflow.operators import DataQualityOperator
 from airflow.executors import GetDefaultExecutor
+from subdags.copy_to_redshift import get_s3_to_redshift
 import yaml
 
 start_date = datetime.utcnow()
@@ -25,14 +26,15 @@ dag = DAG('udacity-dend-capstone-dz',
           description='Load and transform data in Redshift with Airflow',
           max_active_runs=1)
 
+start_operator = DummyOperator(
+    dag=dag,
+    task_id='start_operator')
+
 # Read table definitions from YAML file
 with open('dags/configuration/copy_from_s3_to_redshift.yml', 'r') as file:
     copy_definitions = yaml.safe_load(file)
 
 with dag:
-    start_operator = DummyOperator(
-        task_id='start_operator')
-
     subdag_id = 'copy_data_to_redshift'
     copy_data_to_redshift = SubDagOperator(
         subdag=get_s3_to_redshift(
@@ -115,3 +117,21 @@ process_fk = PostgresOperator(
     postgres_conn_id='redshift'
 )
 process_fk.set_upstream([process_fact_tips, process_fact_reviews])
+
+
+run_quality_checks = DataQualityOperator(
+    task_id='run_data_quality_checks',
+    dag=dag,
+    redshift_conn_id='redshift',
+    queries=({"table": "dim_times", "where": "day IS NULL", "result": 0},
+             {"table": "fact_review", "where": "user_id IS NULL", "result": 0},
+             {"table": "fact_review", "result": 6685900})
+
+)
+run_quality_checks.set_upstream(process_fk)
+
+
+end_operator = DummyOperator(
+    dag=dag,
+    task_id='end_operator')
+end_operator.set_upstream(run_quality_checks)
