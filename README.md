@@ -52,6 +52,15 @@ Apache Airflow, in special, gives freedom to create new plugins and adapt it to 
 ## Data Model
 The final data model include seven tables, being five of them dimensions and two facts.
 
+![Data Model](https://i.ibb.co/LxXdhbm/Screenshot-2019-08-01-at-20-17-36.png)
+
+As mentioned, the schema is closer to Snowflake as we have many-to-many relationships, covered by a bridge table.
+
+- `dim_users` stores information about the users.
+- `dim_times` has information about times. It makes easier to process aggregation by time.
+- `dim_cities` stores information about dim_cities
+- `dim_business` has information about the business that receive reviews or tips by Yelp users.
+- `dim_category` has information about categories. One business may have many categories and that's why there is a table called `bridge_business_category`.
 
 
 ## Scenarios
@@ -63,11 +72,65 @@ The following scenarios were requested to be addressed:
 
 3. **The database needed to be accessed by 100+ people.** That wouldn't be a problem as Redshift is highly scalable.
 
-## Pipeline Execution
+## Data Pipeline
+The Data pipeline is spread into twelve tasks, being:
+1. `start_operator` and `end_operator` are just dummy tasks, starting and finishing the execution.
+2. `copy_data_to_redshift` is a `SubDagOperator` task. The Subdag will copy the date from S3 to Redshift.
+3. `process_dim_times`, `process_dim_users`, `process_dim_cities`, `process_dim_category`, `process_dim_business`, `process_fact_reviews` and `process_fact_tips` are tasks that will run `SQL` statement to create and populate the dimensions and facts.
+4. `process_foreign_keys` will just create the foreign keys between the tables. This is not done on the creation due to the sequence of the execution.
+5. `run_data_quality_checks` will execute Data Quality against the data.
+
+![DAG](https://i.ibb.co/GMNwWdR/Screenshot-2019-07-31-at-20-20-06.png)
 
 ### Data Ingestion
-The first step is read the data from S3 into Redshift. This is done through the `S3ToRedshift` Operator. In this project I've decided to use a plugin that is available on [Airflow-Plugins](https://github.com/airflow-plugins/redshift_plugin) Github page.
+The first step is read the data from S3 into Redshift. This is done through the `S3ToRedshiftOperator`. In this project I've decided to use a plugin that is available at the [Airflow-Plugins](https://github.com/airflow-plugins/redshift_plugin) Github page.
 
-That plugin has some advantages over the `contrib` option.
+That plugin has some advantages over the `contrib` option, like the automatic creation of the tables.
 
-![picture](https://i.ibb.co/GMNwWdR/Screenshot-2019-07-31-at-20-20-06.png)
+This process is handle by a `SubDag` and the following tasks are covered.
+
+![SubDag](https://i.ibb.co/RpKMWmP/Screenshot-2019-08-01-at-20-06-43.png)
+
+That SubDag is dynamically generated according to the configuration file `/dags/configuration/copy_from_s3_to_redshift.py`. It means that if more tasks are needed then all that is required is to add new details to that file.
+
+### Data Processing
+
+The data processing is made exclusively through SQL statements. Each task has a SQL file that seats on `dags/sql`.
+The purpose is to make simpler to modify the queries without the need of change the code. It allows also to create templated SQL statement.
+
+An example of a SQL statement can be found on following. Every SQL script will follow the same pattern.
+
+1. Drop the table if exists
+2. Create the table
+3. Insert the data from a select statement.
+
+```sql
+DROP TABLE IF EXISTS dim_business CASCADE;
+
+CREATE TABLE IF NOT EXISTS dim_business
+(
+  business_id VARCHAR(256) NOT NULL,
+  name VARCHAR(256) NOT NULL,
+  latitude DOUBLE PRECISION,
+  longitude DOUBLE PRECISION,
+  city_id VARCHAR(32) NOT NULL,
+  full_address VARCHAR(65535),
+  PRIMARY KEY (business_id)
+)
+DISTSTYLE EVEN;
+
+INSERT INTO dim_business
+select
+  b.business_id,
+  b.name,
+  b.latitude,
+  b.longitude,
+  c.city_id,
+  b.full_address
+FROM
+staging_business b
+LEFT JOIN dim_cities c on b.state = c.state AND b.city = c.city;
+```
+
+## Running the Project
+It's assumed that there is an Airflow instance up and running.
