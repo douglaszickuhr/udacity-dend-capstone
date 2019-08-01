@@ -62,6 +62,88 @@ As mentioned, the schema is closer to Snowflake as we have many-to-many relation
 - `dim_business` has information about the business that receive reviews or tips by Yelp users.
 - `dim_category` has information about categories. One business may have many categories and that's why there is a table called `bridge_business_category`.
 
+### Data Dictionary
+
+`dim_users`
+
+Field | Type | PK | FK
+------| ----- | ---- | ----
+user_id | varchar | Yes
+name | varchar
+yelping_since | varchar | | dim_times
+
+`dim_times`
+
+Field | Type | PK | FK
+------| ----- | ---- | ----
+datetime | timestamp | Yes
+hour | int
+minute | int
+day | int
+month | int
+year | int
+quarter | int
+weekday | int
+yearday | int
+
+`dim_cities`
+
+Field | Type | PK | FK
+------| ----- | ---- | ----
+city_id | varchar | Yes
+state | varchar
+city | varchar
+
+`dim_business`
+
+Field | Type | PK | FK
+------| ----- | ---- | ----
+business_id | varchar | Yes
+name | varchar
+latitude | float
+longitude | float
+city_id | varchar | | dim_cities
+full_address | varchar
+
+`dim_category`
+
+Field | Type | PK | FK
+------| ----- | ---- | ----
+category_id | varchar | Yes
+category | varchar
+
+`bridge_business_category`
+
+Field | Type | PK | FK
+------| ----- | ---- | ----
+bridge_business_category_id | varchar | Yes
+business_id | varchar
+category_id | varchar
+
+`fact_tip`
+
+Field | Type | PK | FK
+------| ----- | ---- | ----
+tip_id | varchar | Yes
+user_id | varchar | | dim_users
+business_id | varchar | | dim_business
+text | varchar
+compliment_count | int
+
+`fact_review`
+
+Field | Type | PK | FK
+------| ----- | ---- | ----
+review_id | varchar | Yes
+user_id | varchar | | dim_users
+business_id | varchar | | dim_business
+stars | float
+useful | int
+funny | int
+cool | int
+text | varchar
+date | timestamp | | dim_times
+
 
 ## Scenarios
 The following scenarios were requested to be addressed:
@@ -134,3 +216,25 @@ LEFT JOIN dim_cities c on b.state = c.state AND b.city = c.city;
 
 ## Running the Project
 It's assumed that there is an Airflow instance up and running.
+- Copy `dags` and `plugins` files to Airflow work environment.
+
+### Create AWS connection
+Setup a new connection on Airflow called `aws_credentials` according to the following example.
+
+![](https://i.ibb.co/wrnbMTc/Screenshot-2019-08-01-at-20-45-14.png)
+It's important to fill the Extra field with the respective `aws_access_key_id` and `aws_secret_access_key` as a JSON object. This is necessary and the DAG won't work without that configuration.
+
+```JSON
+{
+   "aws_access_key_id": "AKIAYLC37GRFVANBDO43",
+   "aws_secret_access_key": "xxxxxxxx"
+}
+```
+
+### Create Redshift Connection
+Setup a new connection on Airflow called `redshift`, according to the following example.
+
+![](https://i.ibb.co/PtXbPdj/Screenshot-2019-08-01-at-20-49-19.png)
+
+### Execute the DAG
+Having the configuration finished, then just turn the DAG on and run it manually.
